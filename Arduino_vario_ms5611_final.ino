@@ -1,6 +1,6 @@
 /*
 Home made variometer code for Arduino
-Feel free to use as you wish.
+Feel free to use it as you wish.
 (c) 2018 Petr Vilimek
 email: spiderwolf@seznam.cz
 */
@@ -14,6 +14,7 @@ email: spiderwolf@seznam.cz
 #include <Adafruit_PCD8544.h>
 #include <SimpleKalmanFilter.h>
 
+// LCD PIN definition
 #define RST 4
 #define CE 5
 #define DC 6
@@ -23,7 +24,7 @@ email: spiderwolf@seznam.cz
 // LCD variable
 Adafruit_PCD8544 display = Adafruit_PCD8544(RST, CE, DC, DIN, CLK);
 
-// Kalman filter 
+// Kalman filter used for smoothing altitude values 
 SimpleKalmanFilter pressureKalmanFilter(0.2, 0.2, 1.0);
 
 /*
@@ -33,6 +34,8 @@ SimpleKalmanFilter pressureKalmanFilter(0.2, 0.2, 1.0);
   Web: http://www.jarzebski.pl
   (c) 2014 by Korneliusz Jarzebski
  */
+
+// Barometer variable
 MS5611 ms5611;
 
 // Altitude 
@@ -136,6 +139,7 @@ long readVcc() {
 
 void setup() 
 {
+  // Initialize LCD 
   display.begin();
   display.clearDisplay();
   
@@ -161,7 +165,7 @@ void loop()
 // LCD contrast tuning to adapt ambient light conditions
 display.setContrast(lcdContrast);
 
-// Timer condiotions
+// Timer conditions
 if (millis() >= (previousTime))
 {
 	previousTime = previousTime + 1000;
@@ -189,28 +193,28 @@ buttonContrastState = digitalRead(buttonContrast);
 
  // Calculates Max / Min temperature
  newTemp = realTemperature;
- if(newTemp > maxTemp)
+ if (newTemp > maxTemp)
  maxTemp = newTemp;
- if(newTemp < minTemp)
+ if (newTemp < minTemp)
  minTemp = newTemp;
  
  // Calculates real altitude
  realAltitude = ms5611.getAltitude(realPressure, seaLevelPressure);
  
- // Calculates Kalman filtered altitude 
+ // Calculates filtered altitude 
  estimated_altitude = pressureKalmanFilter.updateEstimate(realAltitude);
  
  // Calculates max altitude
  newAlt = realAltitude;
- if(newAlt > maxAlt)
+ if (newAlt > maxAlt)
  maxAlt = newAlt;
 
  // LCD contrast 
- if(buttonContrastState == HIGH) {
+ if (buttonContrastState == HIGH) {
 	 lcdContrast++;
  }
 
- if(lcdContrast == 51) {
+ if (lcdContrast == 51) {
  lcdContrast = 35;
  }
 
@@ -604,7 +608,7 @@ buttonContrastState = digitalRead(buttonContrast);
   // Set alt as last alt
   lastAlt = estimated_altitude;
   
-  // Overall loop time
+  // Compute overall loop time
   differenceTime = millis() - varioPreviousTime;
   varioPreviousTime = differenceTime + varioPreviousTime;
 }
